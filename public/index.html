@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="shortcut icon" href="http://localhost/" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+.btn {
+  border: none;
+  background-color: inherit;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.btn:hover {background: #eee;}
+
+body { background-color: #cccccc;  }
+</style>
+</head>
+
+<head>
+<title>Bob Ant Page</title>
+<meta name="generator" content="Bluefish 2.2.10" >
+<meta name="author" content="Bob Campbell" >
+<meta name="date" content="2021-03-25T21:10:36+1000" >
+<meta name="copyright" content="">
+<meta name="keywords" content="">
+<meta name="description" content="">
+<meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
+<meta http-equiv="content-style-type" content="text/css">
+<meta http-equiv="expires" content="0">
+<!--<meta http-equiv="refresh" content="5"> -->
+</head>
+<body>
+	<h1><div style="font-size: larger; color:#0000FF;"><strong><div style="text-align: center;">VK4XV Remote Antenna Managment</div></strong></div></h1>
+	
+	<h2><div style="font-size: larger; color:#0000FF;"><strong><div style="text-align: center;">Select Antenna</div></strong></div></h2>
+	
+<script  type="text/javascript">
+	function antsel(num) {
+	socket.emit('ant select',(num));
+	console.log("Ant Sel= %s",num);
+	}
+</script>
+
+<script type="text/javascript">
+	
+	function servo(num,pos) {
+//	usec = (((pos/90)+.5)*1000);
+//	usec = Math.round(usec);
+	socket.emit('servo pos',(num),(pos));
+	console.log("Test Cap C?= %s %s",num,pos); 
+	}
+
+	function servo_switch(num,position) {
+	var angle =[650,950,1150,1370,1620,1870,2050,2270,2450];
+	socket.emit('servo switch',num,position);	
+	console.log("Test L Switch= %s %s",num,position); 
+	}
+
+	function chfreq(num) {
+	socket.emit('freq ch',num);
+	console.log('Freq= %d',num);
+	}
+</script>
+
+ <form id="antForm" name="antForm" style="text-align: center;">
+
+  <input type="radio" id="ant1" name="switch" value="1" onclick="antsel(this.value)">
+  <label for="ant1">Ant1</label>
+  <input type="radio" id="ant2" name="switch" value="2" onclick="antsel(this.value)">
+  <label for="ant2">Ant2</label>
+  <input type="radio" id="ant3" name="switch" value="3" onclick="antsel(this.value)">
+  <label for="ant3">Ant3</label>
+  <input type="radio" id="ant4" name="switch" value="4" onclick="antsel(this.value)">
+  <label for="ant3">Ant4</label>
+  <input type="radio" id="ant0" name="switch" value="0" onclick="antsel(this.value)">
+  <label for="ant3">Dummy Load</label>
+
+  <div>
+
+</form>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+var socket = io(); //load socket.io-client and connect to the host that serves the page
+
+// client-side
+socket.on("connect", () => {
+  console.log(socket.id); // x8WIv7-mJelg7on_ALbx
+});
+socket.on('adc Bat', (batvolt) =>{
+	console.log('Bat Volts= %s',batvolt);
+        document.getElementById("batvolts").value= batvolt;
+});
+socket.on('init all',(freq,ant,cap1,cap2,lswitch,serpar,cinp) => {
+	document.getElementById("freq").value= freq;
+	if(ant==1){radbtn = document.getElementById("ant1"); radbtn.checked=true;}
+	if(ant==2){radbtn = document.getElementById("ant2"); radbtn.checked=true;}
+	if(ant==3){radbtn = document.getElementById("ant3"); radbtn.checked=true;}
+	if(ant==0){radbtn = document.getElementById("ant0"); radbtn.checked=true;}
+	document.getElementById("servo1").value= cap1;
+	document.getElementById("servo2").value= cap2;
+	document.getElementById("switch1").value= lswitch;
+	if(serpar=='0'){radbtn = document.getElementById("capSer"); radbtn.checked=true;}
+	if(serpar=='1'){radbtn = document.getElementById("cappar"); radbtn.checked=true;}
+	if(cinp==0){radbtn = document.getElementById("capLarge"); radbtn.checked=true;}
+	if(cinp==1){radbtn = document.getElementById("capSmall"); radbtn.checked=true;}
+
+	console.log('Init Freq=%d Ant=%d C1=%s C2=%d LSw=%d S/P=%d Cin=%d',freq,ant,cap1,cap2,lswitch,serpar,cinp);
+	
+});
+
+</script>
+
+	<h3><div style="font-size: larger; color:#0000FF;"><strong><div style="text-align: center;">ATU Control</div></h3> 
+
+<form style="text-align: center;">
+	<p> Freq:
+	<input type="number" id="freq" size="6" onchange="chfreq(this.value)" value="+valuestring+" >
+	</p>
+	<p>Cap_C1:
+	<input type="number" min="500" max="2500" size="4" id="servo1" onchange="servo(0,this.value)" value=" +valueString+">
+	
+	Cap_C2:
+	<input type="number" min="500" max="2500" size="4" id="servo2" onchange="servo(1,this.value)" value="+valueString+"/>
+
+	<label for="position">L Switch (0-8):</label>
+	<input type="number" id="switch1" name="switch" min="0" max="8" size="1" onchange="servo_switch(2,this.value)" value="+valueString+"</p>
+
+
+</form>
+
+<!--            //todo finish this Bob.c	-->
+	<h3><div style="font-size: larger; color:#0000FF;"><strong><div style="text-align:
+	center;">Set output Cap </div></strong></div></h3>
+
+ <form id="outcap" name="outCap" style="text-align: center;">
+
+	<input type="radio" id="capSer" name="switch" value="0" onclick="serx(this.value)">
+	<label for="capSer">C Series</label>
+	<input type="radio" id="cappar" name="switch" value="1" onclick="serx(this.value)">
+	<label for="cappar">C Parallel</label>
+</form>
+
+<script>  
+	function serx(button) {
+	if(button==1) {
+		num=3, usec=1300;	// was 1.2
+		}
+	else {
+		num=3, usec=1800;
+		}
+		var data = (num +"@"+usec);
+		socket.emit('serpar',num,button);
+		console.log("Test  Switch= 3 Par/Ser Data=%s %s",num,button); 
+
+	}
+</script>
+
+
+<!--            //todo finish this Bob.c	-->
+	<h4><div style="font-size: larger; color:#0000FF;"><strong><div style="text-align:
+	center;">Set Input Cap </div></strong></div></h4>
+
+ <form id="incap" name="InCap" style="text-align: center;">
+
+	<input type="radio" id="capLarge" name="switch" value="0" onclick="capx(this.value)">
+	<label for="capLarge">C Large</label>
+	<input type="radio" id="capSmall" name="switch" value="1" onclick="capx(this.value)">
+	<label for="capSmall">C Small</label>
+</form>
+	
+<script>
+ 
+	function capx(state) {
+	var num = 7;
+	socket.emit('input cap',num,state);
+	console.log("Test Input Cap=%s %s",num,state); 
+
+	}		
+</script>
+
+<!-- Test code only -->
+<form style="text-align: center;">
+	<label for="batvolts">Battery Volts</label>
+	<input type="text" id="batvolts" name="BatVolts" size="4"  onclick="adcx(0)"><br> 
+	
+<script>
+ 
+	function adcx(num) {
+	var bat = 0;
+	var data = (num);
+	console.log("Test adc=%s Bat=%f",data,bat);
+	document.getElementById("batvolts").value= bat;
+	}		
+</script>
+
+</body>
+</html>

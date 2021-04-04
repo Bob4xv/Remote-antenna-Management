@@ -1,0 +1,23 @@
+{
+  "name": "project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "mysql": "^2.18.1",
+    "pca9685": "^5.0.0",
+    "raspi": "^6.0.1",
+    "raspi-i2c": "^6.2.4",
+    "raspi-kit-ads1x15": "^1.0.0",
+    "require": "^0.4.9",
+    "rpio": "^2.4.2",
+    "socket.io": "^4.0.1"
+  }
+}
