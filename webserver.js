@@ -59,13 +59,13 @@ pwm = new Pca9685Driver(options, function(err) {
 
     // Set channel 0 to turn on on step 42 and off on step 255
     // (with optional callback)
-    pwm.setPulseRange(0, 42, 255, function() {
-        if (err) {
-            console.error("Error setting pulse range.");
-        } else {
-            console.log("Pulse range set.");
-        }
-    });
+//    pwm.setPulseRange(0, 42, 255, function() {
+//        if (err) {
+//            console.error("Error setting pulse range.");
+//        } else {
+//            console.log("Pulse range set.");
+//        }
+//    });
 });
 
 io.on('connection', (socket) => { // WebSocket Connection
@@ -143,6 +143,8 @@ io.on('connection', (socket) => { // WebSocket Connection
 });
 
 resetgpio();	// Init all gpio points.
+initservo();	// and servos 0-3
+readstate();	// read last state
 
 http.listen(8080); //listen to port 8080
 
@@ -164,7 +166,9 @@ function handler (req, res) { //create server
  * being actived, so is safe for devices which require a stable setup.
  */
 process.on('SIGINT', function () { //on ctrl+c
+  savestatus();	//save current settings
    resetgpio();
+    pwm.dispose();   // stop pwm
 process.exit(); //exit completely
   });
 
@@ -174,3 +178,52 @@ function resetgpio() {
    rpio.open(22, rpio.OUTPUT, rpio.HIGH);
    rpio.open(7, rpio.OUTPUT, rpio.HIGH);
  }
+
+function initservo() {
+var x = 0;
+setTimeout(function(){ x.value="2 seconds" }, 2000);
+  for(i=0; i<=3; i++) {
+    pwm.setPulseRange(i, 500, 2500, function(err) {
+        if (err) {
+            console.error("Error setting pulse range.");
+        } else {
+           // console.log("Pulse range set.");
+        }
+    });
+  }
+    console.log('Pulse range set');
+}
+
+function savestatus() {
+var currentstate = [freq,ant,cap1,cap2,lswitch,serpar,cinp];
+fs.writeFileSync('AtuState.txt', currentstate, err => {
+  if (err) {
+    console.error(err)
+    return
+  }
+  console.log('Current state saved\n');
+
+  })
+}
+
+function readstate() {
+try {
+  var data = fs.readFileSync('AtuState.txt', 'utf8')
+//  console.log(data);
+  arr=data.split(",");
+  freq = arr[0];
+  ant = arr[1];
+  cap1 = arr[2];
+  cap2 = arr[3];
+  lswitch=arr[4];
+  serpar=arr[5];
+  cinp=arr[6];
+//  console.log("freq=%s ant=%s C1=%s C2=%s lsw=%s S/P=%s Cin=%s",freq,ant,cap1,cap2,lswitch,serpar,cinp);
+  } catch (err) {
+  console.error(err)
+  }
+}
+//function setstate() {
+
+
+//}
