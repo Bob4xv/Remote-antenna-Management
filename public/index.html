@@ -75,8 +75,8 @@ body { background-color: #cccccc;  }
   <label for="ant2">Ant2</label>
   <input type="radio" id="ant3" name="switch" value="3" onclick="antsel(this.value)">
   <label for="ant3">Ant3</label>
-  <input type="radio" id="ant4" name="switch" value="4" onclick="antsel(this.value)">
-  <label for="ant3">Ant4</label>
+<!--  <input type="radio" id="ant4" name="switch" value="4" onclick="antsel(this.value)">
+  <label for="ant3">Ant4</label> -->
   <input type="radio" id="ant0" name="switch" value="0" onclick="antsel(this.value)">
   <label for="ant3">Dummy Load</label>
 
@@ -175,22 +175,19 @@ socket.on('init all',(freq,ant,cap1,cap2,lswitch,serpar,cinp) => {
 	<label for="capSmall">C Small</label>
 </form>
 	
+
+<form style="text-align: center;">
+
+	<label for="batvolts">Battery Volts</label>
+	<input type="text" id="batvolts" name="BatVolts" size="4"  onclick="adcx(0)"><br> 
+
 <script>
- 
-	function capx(state) {
-	var num = 7;
+ 	function capx(state) {
+	var num = 7;		//gpio7  was to be ant4
 	socket.emit('input cap',num,state);
 	console.log("Test Input Cap=%s %s",num,state); 
 
-	}		
-</script>
-
-<!-- Test code only -->
-<form style="text-align: center;">
-	<label for="batvolts">Battery Volts</label>
-	<input type="text" id="batvolts" name="BatVolts" size="4"  onclick="adcx(0)"><br> 
-	
-<script>
+	}
  
 	function adcx(num) {
 	var bat = 0;

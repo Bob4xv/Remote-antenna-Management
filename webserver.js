@@ -80,32 +80,26 @@ io.on('connection', (socket) => { // WebSocket Connection
     if(antvalue==2) {
     rpio.write(18,0);
     }
+    if(antvalue==3) {
+    rpio.write(22,0);
+    }
+//    if(antvalue==4) {	// in use for cinp
+//    rpio.write(7,0);
+//    }
     ant = antvalue;
   });
   
   socket.on('servo pos',(num,pos) => {
-//  usec = ((pos/90)+.5)*1000;
-  pos = Math.round(pos);
-  pwm.setPulseLength(num,pos,0, function(err){
-        if (err) {
-            console.error("Error setting pulse range.");
-        } else {
-            console.log("Servo %s %d",num,pos);
-        }
-    }); 
+  console.log("Setting servo num %s pos %s",num,pos);
+  pos = Math.round(pos);		//need number for setservo 
+    setservo(num,pos);
     if(num == 0) {cap1 = pos; }
     if(num == 1) {cap2 = pos; }
   });
   
   socket.on('servo switch',(num,position) => {
   var angle =[650,950,1150,1370,1620,1870,2050,2270,2450];
-  pwm.setPulseLength(num,angle[position],0, function(err) {
-          if (err) {
-            console.error("Error setting pulse range.");
-        } else {
-            console.log('Servo %s %d',num,position);
-          }
-      });
+  setservo(num,angle[position]);
       lswitch = position;
   });
   
@@ -113,13 +107,7 @@ io.on('connection', (socket) => { // WebSocket Connection
   if(pos=='0'){usec=1300;}
   if(pos=='1'){usec=1700;}
 //  else usec=1500;
-  pwm.setPulseLength(num,usec,0, function(err) {
-          if (err) {
-            console.error("Error setting pulse range.");
-        } else {
-            console.log('Servo %s %d',num,usec);
-          }
-      });
+  setservo(num,usec);
       serpar = pos;
   });
 
@@ -138,6 +126,7 @@ io.on('connection', (socket) => { // WebSocket Connection
    console.log('Servo %s %d',num,state);
    cinp = state;
   });
+
   socket.emit('adc Bat',batVolts);  
   socket.emit('init all',freq,ant,cap1,cap2,lswitch,serpar,cinp);
 });
@@ -145,6 +134,7 @@ io.on('connection', (socket) => { // WebSocket Connection
 resetgpio();	// Init all gpio points.
 initservo();	// and servos 0-3
 readstate();	// read last state
+setstate();	// set gpio to saved state
 
 http.listen(8080); //listen to port 8080
 
@@ -223,7 +213,28 @@ try {
   console.error(err)
   }
 }
-//function setstate() {
+function setstate() {
 
+    if (ant == 1) {
+      rpio.write(16,0); //turn LED on or off
+    }
+    if(ant == 2) {
+    rpio.write(18,0);
+    }
+    if(ant == 3) {
+    rpio.write(22,0);
+    }
+    if(cinp == 0){
+    rpio.write(7,0);
+    }
+}
 
-//}
+function setservo(num,pos) {
+  pwm.setPulseLength(num,pos,0, function(err){
+        if (err) {
+            console.error("Error setting pulse range.");
+        } else {
+            console.log("Servo %s %d",num,pos);
+        }
+    }); 
+}
