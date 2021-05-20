@@ -179,7 +179,7 @@ socket.on('init all',(freq,ant,cap1,cap2,lswitch,serpar,cinp) => {
 <form style="text-align: center;">
 
 	<label for="batvolts">Battery Volts</label>
-	<input type="text" id="batvolts" name="BatVolts" size="4"  onclick="adcx(0)"><br> 
+	<input type="text" id="batvolts" name="BatVolts" size="4" onclick="batupdate(0)"><br> 
 
 <script>
  	function capx(state) {
@@ -189,15 +189,14 @@ socket.on('init all',(freq,ant,cap1,cap2,lswitch,serpar,cinp) => {
 
 	}
  
-	function adcx(num) {
-	var bat = 0;
-	var data = (num);
-	console.log("Test adc=%s Bat=%f",data,bat);
-	document.getElementById("batvolts").value= bat;
+	function batupdate(num) {
+	socket.emit('batupdate', num);
+	console.log("Emit Bat Update request from client %s",num);
+//	document.getElementById("batvolts").value= num;
 	}		
 </script>
 
-<img src="../../bat_volt.png" width="880" height="224" alt="" id="graphic2">
+<!-- <img src="../../bat_volt.png" width="880" height="224" alt="" id="graphic2"> <--
 
 </body>
 </html>

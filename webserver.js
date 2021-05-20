@@ -4,8 +4,13 @@ var io = require('socket.io')(http) //require socket.io module and pass the http
 var rpio= require('rpio');
 var i2cBus = require("i2c-bus");
 var Pca9685Driver = require("pca9685").Pca9685Driver;
+var publicDir = require('path').join(__dirname,'/public');
+
+//app.use(express.static(publicDir));
 const I2C = require('raspi-i2c').I2C;
 const ADS1x15 = require('raspi-kit-ads1x15');
+const {exec}= require("child_process");
+const bat_scalefactor = 6.8238;
 var batVolts = 0;
 var ant =0;
 var cap1 =500;
@@ -29,6 +34,7 @@ var freq =0;
         sps: ADS1x15.spsADS1015.SPS_250         // data rate (samples per second)
     });
 
+function bat_update(){
     // Get a single-ended reading from channel-0 and display the results
     adc.readChannel(ADS1x15.channel.CHANNEL_0, (err, value, volts) => {
         if (err) {
@@ -36,11 +42,14 @@ var freq =0;
             process.exit(1);
         } else {
         volts = volts.toFixed(3);
-            console.log('Channel 0');    // will be a 11 or 15 bit integer depending on chip
-            console.log(' * Volts:', volts);    // voltage reading factoring in the PGA
-            batVolts = volts;
+//            console.log('Channel 0');    // will be a 11 or 15 bit integer depending on chip
+//            console.log(' * Volts:', volts);    // voltage reading factoring in the PGA
+            batVolts = volts*bat_scalefactor;	// scale for voltage divider.
+            batVolts = batVolts.toFixed(3);
+            console.log('ADC Battery Volts:', batVolts);    // voltage reading factoring in the PGA
         }
     });
+  }
 
 
 var options = {
@@ -123,18 +132,27 @@ io.on('connection', (socket) => { // WebSocket Connection
     if(state==1) {
     rpio.write(num,1);
     }
-   console.log('Servo %s %d',num,state);
+   console.log('Input Cap GPIO %s state %d',num,state);
    cinp = state;
   });
 
+  socket.on('batupdate',(num) => {
+//  batVolts=num;
+//  update_batVolts();
+  bat_update();
+  console.log('Socket Bat Update %s',batVolts);
   socket.emit('adc Bat',batVolts);  
+  });
+  
   socket.emit('init all',freq,ant,cap1,cap2,lswitch,serpar,cinp);
 });
 
-resetgpio();	// Init all gpio points.
-initservo();	// and servos 0-3
-readstate();	// read last state
-setstate();	// set gpio to saved state
+resetgpio();		// Init all gpio points.
+initservo();		// and servos 0-3
+readstate();		// read last state
+setstate();		// set gpio to saved state
+//update_batVolts();	// get battery status
+bat_update();	// get battery volts
 
 http.listen(8080); //listen to port 8080
 
@@ -238,3 +256,30 @@ function setservo(num,pos) {
         }
     }); 
 }
+
+/*
+// Battery volts now comes from the last update tothe RRD database.
+function update_batVolts() {
+//var temp
+let temp =  exec("./RRD/lastrrd.sh", (error, stdout, stderr) => {
+      if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+      if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+
+//        var temp = ('${stdout}');
+//      temp = (16);
+//      (console.log(`update_batVolts:${stdout}`));
+//      BatVolts = $(console.log(`${stdout}`));
+    });
+    temp = temp.stdout.pipe(process.stdout);
+//    temp = sed -n {'$'}p {temp};
+return(temp);
+//return  ( childProcess.stdout.pipe(process.stdout));
+//console.log('Temp= %s',process.stdout);
+}
+*/
